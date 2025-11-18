@@ -3,8 +3,9 @@ services:
     name: safehome-backend
     env: python
     region: oregon
-    buildCommand: "./build.sh"
-    startCommand: "gunicorn service.wsgi:application"
+    plan: free
+    buildCommand: "chmod +x build.sh && ./build.sh"
+    startCommand: "cd service && gunicorn service.wsgi:application"
     envVars:
       - key: PYTHON_VERSION
         value: 3.10.11

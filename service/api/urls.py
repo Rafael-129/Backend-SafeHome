@@ -1,0 +1,17 @@
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from . import views
+
+# Router para ViewSets
+router = DefaultRouter()
+router.register(r'departamentos', views.DepartamentoViewSet, basename='departamento')
+router.register(r'usuarios', views.UsuarioViewSet, basename='usuario')
+router.register(r'visitantes', views.VisitanteViewSet, basename='visitante')
+router.register(r'scanner', views.ScannerViewSet, basename='scanner')
+router.register(r'historial', views.HistorialAccesosViewSet, basename='historial')
+
+urlpatterns = [
+    path('', views.api_root, name='api-root'),
+    path('health/', views.health_check, name='health-check'),
+    path('', include(router.urls)),
+]

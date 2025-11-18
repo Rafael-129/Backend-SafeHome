@@ -34,7 +34,13 @@ class Usuario(models.Model):
     foto = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    id_usuario = models.BigIntegerField()
+    id_usuario = models.BigIntegerField(null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.id_usuario:
+            import time
+            self.id_usuario = int(time.time() * 1000)
+        super().save(*args, **kwargs)
 
     class Meta:
         db_table = 'usuario'
@@ -56,7 +62,13 @@ class Visitante(models.Model):
     depart_visita = models.CharField(max_length=20)
     foto = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    id_visitante = models.BigIntegerField()
+    id_visitante = models.BigIntegerField(null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.id_visitante:
+            import time
+            self.id_visitante = int(time.time() * 1000)
+        super().save(*args, **kwargs)
 
     class Meta:
         db_table = 'visitante'
@@ -68,15 +80,26 @@ class Visitante(models.Model):
 
 
 class Scanner(models.Model):
+    TIPO_PERSONA_CHOICES = [
+        ('residente', 'Residente'),
+        ('visitante', 'Visitante'),
+    ]
+
     idscanner = models.AutoField(primary_key=True)
-    idusuario = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True, blank=True, db_column='idusuario', related_name='scanners_usuario')
-    idvisitante = models.ForeignKey(Visitante, on_delete=models.SET_NULL, null=True, blank=True, db_column='idvisitante', related_name='scanners_visitante')
+    idusuario = models.IntegerField(null=True, blank=True)
+    idvisitante = models.IntegerField(null=True, blank=True)
     foto_capturada = models.TextField(null=True, blank=True)
-    tipo_persona = models.CharField(max_length=20, null=True, blank=True)
+    tipo_persona = models.CharField(max_length=20, choices=TIPO_PERSONA_CHOICES, null=True, blank=True)
     fecha = models.DateTimeField(auto_now_add=True)
-    id_scanner = models.BigIntegerField()
+    id_scanner = models.BigIntegerField(null=True, blank=True)
     id_usuario = models.BigIntegerField(null=True, blank=True)
     id_visitante = models.BigIntegerField(null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.id_scanner:
+            import time
+            self.id_scanner = int(time.time() * 1000)
+        super().save(*args, **kwargs)
 
     class Meta:
         db_table = 'scanner'
@@ -92,21 +115,29 @@ class HistorialAccesos(models.Model):
         ('entrada', 'Entrada'),
         ('salida', 'Salida'),
         ('pendiente', 'Pendiente'),
+        ('Permitido', 'Permitido'),
+        ('Denegado', 'Denegado'),
     ]
 
     idhistorial = models.AutoField(primary_key=True)
-    idusuario = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True, blank=True, db_column='idusuario', related_name='historial_accesos')
-    idvisitante = models.ForeignKey(Visitante, on_delete=models.SET_NULL, null=True, blank=True, db_column='idvisitante', related_name='historial_visitas')
-    idscanner = models.ForeignKey(Scanner, on_delete=models.SET_NULL, null=True, blank=True, db_column='idscanner', related_name='historial_scanner')
+    idusuario = models.IntegerField(null=True, blank=True)
+    idvisitante = models.IntegerField(null=True, blank=True)
+    idscanner = models.IntegerField(null=True, blank=True)
     fecha_entrada = models.DateField()
     hora_entrada = models.TimeField()
     hora_salida = models.TimeField(null=True, blank=True)
     estado = models.CharField(max_length=20, choices=ESTADOS)
     created_at = models.DateTimeField(auto_now_add=True)
-    id_historial = models.BigIntegerField()
+    id_historial = models.BigIntegerField(null=True, blank=True)
     id_scanner = models.BigIntegerField(null=True, blank=True)
     id_usuario = models.BigIntegerField(null=True, blank=True)
     id_visitante = models.BigIntegerField(null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.id_historial:
+            import time
+            self.id_historial = int(time.time() * 1000)
+        super().save(*args, **kwargs)
 
     class Meta:
         db_table = 'historialaccesos'

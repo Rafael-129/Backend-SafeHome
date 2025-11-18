@@ -43,8 +43,16 @@ class HistorialAccesosAdmin(admin.ModelAdmin):
 
     def get_persona(self, obj):
         if obj.idusuario:
-            return f"Usuario: {obj.idusuario.nombre} {obj.idusuario.apellido}"
+            try:
+                usuario = Usuario.objects.get(idusuario=obj.idusuario)
+                return f"Usuario: {usuario.nombre} {usuario.apellido}"
+            except Usuario.DoesNotExist:
+                return f"Usuario ID: {obj.idusuario}"
         elif obj.idvisitante:
-            return f"Visitante: {obj.idvisitante.nombre} {obj.idvisitante.apellido}"
+            try:
+                visitante = Visitante.objects.get(idvisitante=obj.idvisitante)
+                return f"Visitante: {visitante.nombre} {visitante.apellido}"
+            except Visitante.DoesNotExist:
+                return f"Visitante ID: {obj.idvisitante}"
         return "N/A"
     get_persona.short_description = 'Persona'

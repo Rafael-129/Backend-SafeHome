@@ -136,7 +136,7 @@ class HistorialAccesosViewSet(viewsets.ModelViewSet):
     """
     ViewSet para gestionar historial de accesos
     """
-    queryset = HistorialAccesos.objects.all()
+    queryset = HistorialAccesos.objects.select_related('idusuario', 'idvisitante', 'idusuario__iddepartamento', 'idvisitante__iddepartamento').all()
     serializer_class = HistorialAccesosSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['estado', 'fecha_entrada', 'idusuario', 'idvisitante']

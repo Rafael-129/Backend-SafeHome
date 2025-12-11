@@ -61,7 +61,7 @@ class ScannerSerializer(serializers.ModelSerializer):
                 return {
                     'nombre': usuario.nombre,
                     'apellido': usuario.apellido,
-                    'departamento': usuario.departamento
+                    'departamento': usuario.iddepartamento.codigo if usuario.iddepartamento else 'N/A'
                 }
             except:
                 return None
@@ -75,7 +75,7 @@ class ScannerSerializer(serializers.ModelSerializer):
                 return {
                     'nombre': visitante.nombre,
                     'apellido': visitante.apellido,
-                    'depart_visita': visitante.depart_visita
+                    'depart_visita': visitante.iddepartamento.codigo if visitante.iddepartamento else 'N/A'
                 }
             except:
                 return None
@@ -95,40 +95,40 @@ class HistorialAccesosSerializer(serializers.ModelSerializer):
     def get_usuario_info(self, obj):
         if obj.idusuario:
             try:
-                from .models import Usuario
-                usuario = Usuario.objects.get(idusuario=obj.idusuario)
+                usuario = obj.idusuario
                 return {
                     'nombre': usuario.nombre,
                     'apellido': usuario.apellido,
-                    'departamento': usuario.departamento
+                    'departamento': usuario.iddepartamento.codigo if usuario.iddepartamento else 'N/A'
                 }
-            except:
+            except Exception as e:
+                print(f"Error obteniendo usuario_info: {e}")
                 return None
         return None
 
     def get_visitante_info(self, obj):
         if obj.idvisitante:
             try:
-                from .models import Visitante
-                visitante = Visitante.objects.get(idvisitante=obj.idvisitante)
+                visitante = obj.idvisitante
                 return {
                     'nombre': visitante.nombre,
                     'apellido': visitante.apellido,
-                    'depart_visita': visitante.depart_visita
+                    'depart_visita': visitante.iddepartamento.codigo if visitante.iddepartamento else 'N/A'
                 }
-            except:
+            except Exception as e:
+                print(f"Error obteniendo visitante_info: {e}")
                 return None
         return None
 
     def get_scanner_info(self, obj):
         if obj.idscanner:
             try:
-                from .models import Scanner
-                scanner = Scanner.objects.get(idscanner=obj.idscanner)
+                scanner = obj.idscanner
                 return {
                     'tipo_persona': scanner.tipo_persona,
                     'fecha': scanner.fecha
                 }
-            except:
+            except Exception as e:
+                print(f"Error obteniendo scanner_info: {e}")
                 return None
         return None

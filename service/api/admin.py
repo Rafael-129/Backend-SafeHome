@@ -12,18 +12,18 @@ class DepartamentoAdmin(admin.ModelAdmin):
 
 @admin.register(Usuario)
 class UsuarioAdmin(admin.ModelAdmin):
-    list_display = ['idusuario', 'nombre', 'apellido', 'dni', 'correo', 'departamento', 'created_at']
-    list_filter = ['departamento', 'created_at']
+    list_display = ['idusuario', 'nombre', 'apellido', 'dni', 'correo', 'iddepartamento']
+    list_filter = ['iddepartamento']
     search_fields = ['nombre', 'apellido', 'dni', 'correo']
-    ordering = ['-created_at']
+    ordering = ['idusuario']
 
 
 @admin.register(Visitante)
 class VisitanteAdmin(admin.ModelAdmin):
-    list_display = ['idvisitante', 'nombre', 'apellido', 'dni', 'depart_visita', 'fecha_visita', 'hora_visita']
-    list_filter = ['depart_visita', 'fecha_visita']
+    list_display = ['idvisitante', 'nombre', 'apellido', 'dni', 'iddepartamento', 'fecha_visita', 'hora_visita']
+    list_filter = ['iddepartamento', 'fecha_visita']
     search_fields = ['nombre', 'apellido', 'dni', 'motivo']
-    ordering = ['-created_at']
+    ordering = ['-fecha_visita']
 
 
 @admin.register(Scanner)
@@ -43,16 +43,8 @@ class HistorialAccesosAdmin(admin.ModelAdmin):
 
     def get_persona(self, obj):
         if obj.idusuario:
-            try:
-                usuario = Usuario.objects.get(idusuario=obj.idusuario)
-                return f"Usuario: {usuario.nombre} {usuario.apellido}"
-            except Usuario.DoesNotExist:
-                return f"Usuario ID: {obj.idusuario}"
+            return f"Usuario: {obj.idusuario.nombre} {obj.idusuario.apellido}"
         elif obj.idvisitante:
-            try:
-                visitante = Visitante.objects.get(idvisitante=obj.idvisitante)
-                return f"Visitante: {visitante.nombre} {visitante.apellido}"
-            except Visitante.DoesNotExist:
-                return f"Visitante ID: {obj.idvisitante}"
+            return f"Visitante: {obj.idvisitante.nombre} {obj.idvisitante.apellido}"
         return "N/A"
     get_persona.short_description = 'Persona'

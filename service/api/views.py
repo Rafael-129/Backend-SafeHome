@@ -97,10 +97,10 @@ class VisitanteViewSet(viewsets.ModelViewSet):
     queryset = Visitante.objects.all()
     serializer_class = VisitanteSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['dni', 'depart_visita', 'fecha_visita']
+    filterset_fields = ['dni', 'iddepartamento', 'fecha_visita']
     search_fields = ['nombre', 'apellido', 'dni', 'motivo']
-    ordering_fields = ['nombre', 'apellido', 'fecha_visita', 'created_at']
-    ordering = ['-created_at']
+    ordering_fields = ['nombre', 'apellido', 'fecha_visita']
+    ordering = ['-fecha_visita']
 
     @action(detail=False, methods=['get'])
     def hoy(self, request):

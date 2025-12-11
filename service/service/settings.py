@@ -97,10 +97,10 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.environ.get('DB_NAME', 'safe_home'),
+            'NAME': os.environ.get('DB_NAME', 'safe_home_pzly'),
             'USER': os.environ.get('DB_USER', 'admin'),
-            'PASSWORD': os.environ.get('DB_PASSWORD', 'W6oN9J4BJGLJ3wf54wzH9EXgWR6rgtn1'),
-            'HOST': os.environ.get('DB_HOST', 'dpg-d46mk7q4d50c738v6abg-a.oregon-postgres.render.com'),
+            'PASSWORD': os.environ.get('DB_PASSWORD', 'hDWCjvYTVG7kcdYuWvYknIsE8IIpLwIL'),
+            'HOST': os.environ.get('DB_HOST', 'dpg-d4t653ngi27c73d943j0-a.oregon-postgres.render.com'),
             'PORT': os.environ.get('DB_PORT', '5432'),
         }
     }

@@ -19,7 +19,7 @@ wheels/
 *.whl
 .installed.cfg
 MANIFEST
-
+reset_db.py
 # Virtual environments
 venv/
 env/

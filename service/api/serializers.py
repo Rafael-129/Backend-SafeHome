@@ -17,10 +17,31 @@ class UsuarioSerializer(serializers.ModelSerializer):
 
 
 class VisitanteSerializer(serializers.ModelSerializer):
+    depart_visita = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    
     class Meta:
         model = Visitante
-        fields = '__all__'
-        read_only_fields = ['idvisitante', 'created_at', 'id_visitante']
+        fields = ['idvisitante', 'nombre', 'apellido', 'dni', 'motivo', 'fecha_visita', 'hora_visita', 'iddepartamento', 'foto', 'depart_visita']
+        read_only_fields = ['idvisitante']
+        extra_kwargs = {
+            'iddepartamento': {'required': False}
+        }
+    
+    def create(self, validated_data):
+        # Si viene depart_visita (código), buscar el departamento por código
+        depart_codigo = validated_data.pop('depart_visita', None)
+        if depart_codigo:
+            try:
+                departamento = Departamento.objects.get(codigo=depart_codigo)
+                validated_data['iddepartamento'] = departamento
+            except Departamento.DoesNotExist:
+                raise serializers.ValidationError({'depart_visita': f'Departamento {depart_codigo} no existe'})
+        
+        # Validar que iddepartamento esté presente
+        if 'iddepartamento' not in validated_data:
+            raise serializers.ValidationError({'depart_visita': 'Debe proporcionar un departamento'})
+        
+        return super().create(validated_data)
 
 
 class ScannerSerializer(serializers.ModelSerializer):

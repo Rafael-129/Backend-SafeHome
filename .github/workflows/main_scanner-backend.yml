@@ -60,6 +60,11 @@ jobs:
         with:
           name: python-app
       
+      - name: Copy Backend/service files to root
+        run: |
+          cp -r Backend/service/* .
+          ls -la
+      
       - name: Login to Azure
         uses: azure/login@v2
         with:

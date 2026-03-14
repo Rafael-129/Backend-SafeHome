@@ -13,6 +13,9 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 import os
 import dj_database_url
+from dotenv import load_dotenv  # ← AGREGAR ESTO
+
+load_dotenv()  # ← AGREGAR ESTO
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -93,15 +96,11 @@ if os.environ.get('DATABASE_URL'):
         )
     }
 else:
-    # Configuración para desarrollo local
+    # Configuración para desarrollo local - SQLite
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.environ.get('DB_NAME', 'safe_home_pzly'),
-            'USER': os.environ.get('DB_USER', 'admin'),
-            'PASSWORD': os.environ.get('DB_PASSWORD', 'hDWCjvYTVG7kcdYuWvYknIsE8IIpLwIL'),
-            'HOST': os.environ.get('DB_HOST', 'dpg-d4t653ngi27c73d943j0-a.oregon-postgres.render.com'),
-            'PORT': os.environ.get('DB_PORT', '5432'),
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
 

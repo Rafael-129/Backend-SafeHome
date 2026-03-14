@@ -73,5 +73,5 @@ jobs:
         with:
           app-name: 'scanner-backend'
           slot-name: 'Production'
-          package: ./Backend/service
+          package: Backend/service
           

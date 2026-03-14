@@ -1,0 +1,2 @@
+[config]
+command = cd Backend/service && gunicorn service.wsgi:application --bind=0.0.0.0 --workers 4

@@ -56,8 +56,7 @@ class ScannerSerializer(serializers.ModelSerializer):
     def get_usuario_info(self, obj):
         if obj.idusuario:
             try:
-                from .models import Usuario
-                usuario = Usuario.objects.get(idusuario=obj.idusuario)
+                usuario = obj.idusuario
                 return {
                     'nombre': usuario.nombre,
                     'apellido': usuario.apellido,
@@ -70,8 +69,7 @@ class ScannerSerializer(serializers.ModelSerializer):
     def get_visitante_info(self, obj):
         if obj.idvisitante:
             try:
-                from .models import Visitante
-                visitante = Visitante.objects.get(idvisitante=obj.idvisitante)
+                visitante = obj.idvisitante
                 return {
                     'nombre': visitante.nombre,
                     'apellido': visitante.apellido,

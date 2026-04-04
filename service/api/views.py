@@ -2,6 +2,8 @@ from rest_framework import viewsets, status, filters
 from rest_framework.decorators import api_view, action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
+from django.db.models import Count
+from datetime import date, datetime
 
 from .models import Departamento, Usuario, Visitante, Scanner, HistorialAccesos
 from .serializers import (
@@ -29,6 +31,7 @@ def api_root(request):
             'visitantes': '/api/visitantes/',
             'scanner': '/api/scanner/',
             'historial': '/api/historial/',
+            'historial_estadisticas': '/api/historial/estadisticas/?desde=YYYY-MM-DD&hasta=YYYY-MM-DD',
             'health': '/api/health/',
         }
     })
@@ -105,9 +108,8 @@ class VisitanteViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def hoy(self, request):
         """Obtener visitantes de hoy"""
-        from datetime import date
-        hoy = date.today().strftime('%Y-%m-%d')
-        visitantes = self.queryset.filter(fecha_visita__contains=hoy)
+        hoy = date.today()
+        visitantes = self.queryset.filter(fecha_visita=hoy)
         serializer = self.get_serializer(visitantes, many=True)
         return Response(serializer.data)
 
@@ -147,7 +149,6 @@ class HistorialAccesosViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def hoy(self, request):
         """Obtener accesos de hoy"""
-        from datetime import date
         hoy = date.today()
         accesos = self.queryset.filter(fecha_entrada=hoy)
         serializer = self.get_serializer(accesos, many=True)
@@ -156,6 +157,45 @@ class HistorialAccesosViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def activos(self, request):
         """Obtener accesos activos (sin hora de salida)"""
-        accesos = self.queryset.filter(hora_salida__isnull=True, estado='entrada')
+        accesos = self.queryset.filter(hora_salida__isnull=True, estado='Permitido')
         serializer = self.get_serializer(accesos, many=True)
         return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def estadisticas(self, request):
+        """Obtener estadísticas de accesos en un rango de fechas."""
+        desde = request.query_params.get('desde')
+        hasta = request.query_params.get('hasta')
+
+        qs = self.queryset
+        try:
+            if desde:
+                qs = qs.filter(fecha_entrada__gte=datetime.strptime(desde, '%Y-%m-%d').date())
+            if hasta:
+                qs = qs.filter(fecha_entrada__lte=datetime.strptime(hasta, '%Y-%m-%d').date())
+        except ValueError:
+            return Response(
+                {'error': 'Formato de fecha inválido. Use YYYY-MM-DD en desde/hasta.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        total = qs.count()
+        autorizados = qs.filter(estado='Permitido').count()
+        denegados = qs.filter(estado='Denegado').count()
+        residentes = qs.filter(idusuario__isnull=False).count()
+        visitantes = qs.filter(idvisitante__isnull=False).count()
+        por_estado = list(qs.values('estado').annotate(total=Count('idhistorial')).order_by('estado'))
+
+        return Response(
+            {
+                'totalAccesos': total,
+                'autorizados': autorizados,
+                'denegados': denegados,
+                'residentes': residentes,
+                'visitantes': visitantes,
+                'porEstado': por_estado,
+                'desde': desde,
+                'hasta': hasta,
+            },
+            status=status.HTTP_200_OK,
+        )

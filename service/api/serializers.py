@@ -13,7 +13,7 @@ class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuario
         fields = '__all__'
-        read_only_fields = ['idusuario', 'created_at', 'updated_at', 'id_usuario']
+        read_only_fields = ['idusuario']
 
 
 class VisitanteSerializer(serializers.ModelSerializer):
@@ -51,7 +51,7 @@ class ScannerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Scanner
         fields = '__all__'
-        read_only_fields = ['idscanner', 'fecha', 'id_scanner']
+        read_only_fields = ['idscanner', 'fecha']
 
     def get_usuario_info(self, obj):
         if obj.idusuario:
@@ -90,7 +90,7 @@ class HistorialAccesosSerializer(serializers.ModelSerializer):
     class Meta:
         model = HistorialAccesos
         fields = '__all__'
-        read_only_fields = ['idhistorial', 'created_at', 'id_historial']
+        read_only_fields = ['idhistorial']
 
     def get_usuario_info(self, obj):
         if obj.idusuario:

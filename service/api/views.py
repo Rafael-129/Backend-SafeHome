@@ -65,10 +65,10 @@ class UsuarioViewSet(viewsets.ModelViewSet):
     queryset = Usuario.objects.all()
     serializer_class = UsuarioSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['departamento', 'dni']
+    filterset_fields = ['iddepartamento', 'dni']
     search_fields = ['nombre', 'apellido', 'dni', 'correo']
-    ordering_fields = ['nombre', 'apellido', 'created_at']
-    ordering = ['-created_at']
+    ordering_fields = ['nombre', 'apellido', 'dni']
+    ordering = ['nombre', 'apellido']
 
     @action(detail=False, methods=['get'])
     def buscar_por_dni(self, request):
@@ -141,7 +141,7 @@ class HistorialAccesosViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['estado', 'fecha_entrada', 'idusuario', 'idvisitante']
     search_fields = ['estado']
-    ordering_fields = ['fecha_entrada', 'hora_entrada', 'created_at']
+    ordering_fields = ['fecha_entrada', 'hora_entrada']
     ordering = ['-fecha_entrada', '-hora_entrada']
 
     @action(detail=False, methods=['get'])

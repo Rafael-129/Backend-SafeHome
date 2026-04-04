@@ -19,7 +19,7 @@ from dotenv import load_dotenv
 try:
     env_path = Path(__file__).resolve().parent.parent / '.env'
     if env_path.exists():
-        load_dotenv(env_path)
+        load_dotenv(env_path, override=True)
     else:
         print("[INFO] .env file not found. Using environment variables from Azure Application Settings.")
 except Exception as e:
@@ -99,18 +99,20 @@ WSGI_APPLICATION = 'service.wsgi.application'
 
 # Database
 # ✅ MEJORADO: Timeout configuration para evitar desconexiones
-if os.environ.get('DATABASE_URL'):
+database_url = os.environ.get('DATABASE_URL')
+
+if database_url:
     # Configuración para producción (Azure/Neon)
     DATABASES = {
         'default': dj_database_url.config(
-            default=os.environ.get('DATABASE_URL'),
+            default=database_url,
             conn_max_age=600,
             conn_health_checks=True,
-            OPTIONS={
-                'connect_timeout': 10,
-                'options': '-c default_transaction_isolation=read_committed'
-            }
         )
+    }
+    # Agregar OPTIONS después
+    DATABASES['default']['OPTIONS'] = {
+        'connect_timeout': 10,
     }
 else:
     # Configuración para desarrollo local - SQLite
@@ -173,7 +175,7 @@ REST_FRAMEWORK = {
 # CORS Settings
 CORS_ALLOWED_ORIGINS = os.environ.get(
     'CORS_ALLOWED_ORIGINS',
-    'http://localhost:5173,http://localhost:3000,http://localhost:8000'
+    'http://localhost:5173,http://localhost:5174,http://localhost:3000,http://localhost:8000'
 ).split(',')
 
 CORS_ALLOW_CREDENTIALS = True

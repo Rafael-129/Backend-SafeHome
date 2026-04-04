@@ -9,6 +9,7 @@ router.register(r'usuarios', views.UsuarioViewSet, basename='usuario')
 router.register(r'visitantes', views.VisitanteViewSet, basename='visitante')
 router.register(r'scanner', views.ScannerViewSet, basename='scanner')
 router.register(r'historial', views.HistorialAccesosViewSet, basename='historial')
+router.register(r'perfil', views.PerfilAplicacionViewSet, basename='perfil')
 
 urlpatterns = [
     path('', views.api_root, name='api-root'),

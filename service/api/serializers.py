@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Departamento, Usuario, Visitante, Scanner, HistorialAccesos
+from .models import Departamento, Usuario, Visitante, Scanner, HistorialAccesos, PerfilAplicacion
 
 
 class DepartamentoSerializer(serializers.ModelSerializer):
@@ -21,10 +21,15 @@ class VisitanteSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Visitante
-        fields = ['idvisitante', 'nombre', 'apellido', 'dni', 'motivo', 'fecha_visita', 'hora_visita', 'iddepartamento', 'foto', 'depart_visita']
+        fields = [
+            'idvisitante', 'nombre', 'apellido', 'dni', 'motivo', 'fecha_visita',
+            'hora_visita', 'iddepartamento', 'acepta_foto', 'observacion_privacidad',
+            'foto', 'depart_visita'
+        ]
         read_only_fields = ['idvisitante']
         extra_kwargs = {
-            'iddepartamento': {'required': False}
+            'iddepartamento': {'required': False},
+            'acepta_foto': {'required': False},
         }
     
     def create(self, validated_data):
@@ -40,8 +45,21 @@ class VisitanteSerializer(serializers.ModelSerializer):
         # Validar que iddepartamento esté presente
         if 'iddepartamento' not in validated_data:
             raise serializers.ValidationError({'depart_visita': 'Debe proporcionar un departamento'})
+
+        # Si no acepta foto, no persistir imagen.
+        if validated_data.get('acepta_foto') is False:
+            validated_data['foto'] = None
+            if not validated_data.get('observacion_privacidad'):
+                validated_data['observacion_privacidad'] = 'Visitante no autoriza captura de foto.'
         
         return super().create(validated_data)
+
+
+class PerfilAplicacionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PerfilAplicacion
+        fields = '__all__'
+        read_only_fields = ['idperfil', 'updated_at']
 
 
 class ScannerSerializer(serializers.ModelSerializer):

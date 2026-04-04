@@ -58,6 +58,8 @@ class Visitante(models.Model):
         on_delete=models.RESTRICT, 
         db_column='iddepartamento'
     )
+    acepta_foto = models.BooleanField(default=True)
+    observacion_privacidad = models.CharField(max_length=255, null=True, blank=True)
     foto = models.TextField(null=True, blank=True)
 
     class Meta:
@@ -67,6 +69,25 @@ class Visitante(models.Model):
 
     def __str__(self):
         return f"{self.nombre} {self.apellido} - {self.dni}"
+
+
+class PerfilAplicacion(models.Model):
+    idperfil = models.AutoField(primary_key=True, db_column='idperfil')
+    nombre_aplicacion = models.CharField(max_length=120, default='SafeHome Scanner')
+    descripcion = models.CharField(max_length=255, null=True, blank=True)
+    version = models.CharField(max_length=20, default='1.0.0')
+    contacto_soporte = models.EmailField(max_length=150, null=True, blank=True)
+    permitir_registro_sin_foto = models.BooleanField(default=True)
+    politica_foto_requerida = models.BooleanField(default=False)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'perfilaplicacion'
+        verbose_name = 'Perfil de Aplicacion'
+        verbose_name_plural = 'Perfil de Aplicacion'
+
+    def __str__(self):
+        return f"Perfil - {self.nombre_aplicacion}"
 
 
 class Scanner(models.Model):

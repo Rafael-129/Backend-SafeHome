@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Departamento, Usuario, Visitante, Scanner, HistorialAccesos
+from .models import Departamento, Usuario, Visitante, Scanner, HistorialAccesos, PerfilAplicacion
 
 
 @admin.register(Departamento)
@@ -20,7 +20,7 @@ class UsuarioAdmin(admin.ModelAdmin):
 
 @admin.register(Visitante)
 class VisitanteAdmin(admin.ModelAdmin):
-    list_display = ['idvisitante', 'nombre', 'apellido', 'dni', 'iddepartamento', 'fecha_visita', 'hora_visita']
+    list_display = ['idvisitante', 'nombre', 'apellido', 'dni', 'iddepartamento', 'fecha_visita', 'hora_visita', 'acepta_foto']
     list_filter = ['iddepartamento', 'fecha_visita']
     search_fields = ['nombre', 'apellido', 'dni', 'motivo']
     ordering = ['-fecha_visita']
@@ -48,3 +48,8 @@ class HistorialAccesosAdmin(admin.ModelAdmin):
             return f"Visitante: {obj.idvisitante.nombre} {obj.idvisitante.apellido}"
         return "N/A"
     get_persona.short_description = 'Persona'
+
+
+@admin.register(PerfilAplicacion)
+class PerfilAplicacionAdmin(admin.ModelAdmin):
+    list_display = ['idperfil', 'nombre_aplicacion', 'version', 'permitir_registro_sin_foto', 'politica_foto_requerida', 'updated_at']

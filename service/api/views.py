@@ -5,13 +5,14 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Count
 from datetime import date, datetime
 
-from .models import Departamento, Usuario, Visitante, Scanner, HistorialAccesos
+from .models import Departamento, Usuario, Visitante, Scanner, HistorialAccesos, PerfilAplicacion
 from .serializers import (
     DepartamentoSerializer, 
     UsuarioSerializer, 
     VisitanteSerializer, 
     ScannerSerializer, 
-    HistorialAccesosSerializer
+    HistorialAccesosSerializer,
+    PerfilAplicacionSerializer,
 )
 
 
@@ -29,9 +30,11 @@ def api_root(request):
             'departamentos': '/api/departamentos/',
             'usuarios': '/api/usuarios/',
             'visitantes': '/api/visitantes/',
+            'visitantes_frecuentes': '/api/visitantes/frecuentes/',
             'scanner': '/api/scanner/',
             'historial': '/api/historial/',
             'historial_estadisticas': '/api/historial/estadisticas/?desde=YYYY-MM-DD&hasta=YYYY-MM-DD',
+            'perfil_actual': '/api/perfil/actual/',
             'health': '/api/health/',
         }
     })
@@ -113,6 +116,17 @@ class VisitanteViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(visitantes, many=True)
         return Response(serializer.data)
 
+    @action(detail=False, methods=['get'])
+    def frecuentes(self, request):
+        """Top de visitantes frecuentes por DNI."""
+        top = int(request.query_params.get('top', 10))
+        rows = (
+            Visitante.objects.values('dni', 'nombre', 'apellido')
+            .annotate(total_visitas=Count('idvisitante'))
+            .order_by('-total_visitas', 'apellido', 'nombre')[:top]
+        )
+        return Response(list(rows), status=status.HTTP_200_OK)
+
 
 class ScannerViewSet(viewsets.ModelViewSet):
     """
@@ -125,6 +139,55 @@ class ScannerViewSet(viewsets.ModelViewSet):
     search_fields = ['tipo_persona']
     ordering_fields = ['fecha']
     ordering = ['-fecha']
+
+    def create(self, request, *args, **kwargs):
+        """Procesa un escaneo y trata de resolver la persona por DNI/tipo cuando no llegan IDs."""
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        validated = serializer.validated_data
+        tipo_persona = request.data.get('tipo_persona') or validated.get('tipo_persona')
+        dni = request.data.get('dni')
+
+        usuario = validated.get('idusuario')
+        visitante = validated.get('idvisitante')
+
+        if not usuario and not visitante and dni:
+            if tipo_persona == 'residente':
+                usuario = Usuario.objects.filter(dni=dni).first()
+            elif tipo_persona == 'visitante':
+                visitante = Visitante.objects.filter(dni=dni).order_by('-fecha_visita', '-hora_visita').first()
+            else:
+                usuario = Usuario.objects.filter(dni=dni).first()
+                if not usuario:
+                    visitante = Visitante.objects.filter(dni=dni).order_by('-fecha_visita', '-hora_visita').first()
+
+        if not usuario and not visitante:
+            return Response(
+                {
+                    'autorizado': False,
+                    'tipo_persona': 'desconocido',
+                    'mensaje': 'No se encontro coincidencia para el escaneo.',
+                    'idscanner': None,
+                    'idusuario': None,
+                    'idvisitante': None,
+                    'usuario_info': None,
+                    'visitante_info': None,
+                    'foto_capturada': request.data.get('foto_capturada'),
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        scanner = serializer.save(
+            idusuario=usuario,
+            idvisitante=visitante,
+            tipo_persona='residente' if usuario else 'visitante',
+        )
+
+        output = self.get_serializer(scanner).data
+        output['autorizado'] = True
+        output['mensaje'] = 'Persona identificada correctamente.'
+        return Response(output, status=status.HTTP_201_CREATED)
 
     @action(detail=False, methods=['get'])
     def recientes(self, request):
@@ -199,3 +262,32 @@ class HistorialAccesosViewSet(viewsets.ModelViewSet):
             },
             status=status.HTTP_200_OK,
         )
+
+
+class PerfilAplicacionViewSet(viewsets.ModelViewSet):
+    """Perfil general de la aplicacion (singleton)."""
+    queryset = PerfilAplicacion.objects.all()
+    serializer_class = PerfilAplicacionSerializer
+
+    @action(detail=False, methods=['get', 'put', 'patch'])
+    def actual(self, request):
+        perfil, _ = PerfilAplicacion.objects.get_or_create(
+            idperfil=1,
+            defaults={
+                'nombre_aplicacion': 'SafeHome Scanner',
+                'descripcion': 'Sistema de control de acceso para condominio',
+                'version': '1.0.0',
+                'permitir_registro_sin_foto': True,
+                'politica_foto_requerida': False,
+            },
+        )
+
+        if request.method in ['PUT', 'PATCH']:
+            partial = request.method == 'PATCH'
+            serializer = self.get_serializer(perfil, data=request.data, partial=partial)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data)
+
+        serializer = self.get_serializer(perfil)
+        return Response(serializer.data)
